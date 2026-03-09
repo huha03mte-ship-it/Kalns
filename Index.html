@@ -2,242 +2,505 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSPAY - Member</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RSPAY | สัมผัสประสบการณ์การเงินที่เหนือกว่า</title>
+
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
     <style>
+        /* ---------------------------------------------------------
+        [2] CSS ROOT & THEME DEFINITION
+        ---------------------------------------------------------
+        */
         :root {
-            --p-green: #2ecc71; --p-blue: #3498db; --bg-light: #f8fafc;
-            --text-main: #2d3436; --shadow: 0 10px 25px rgba(0,0,0,0.05);
+            --primary: #2ecc71;
+            --primary-dark: #27ae60;
+            --secondary: #3498db;
+            --bg-body: #f4f7f6;
+            --text-main: #2c3e50;
+            --text-light: #95a5a6;
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.8);
+            --shadow-sm: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.08);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Kanit', sans-serif; }
-        body { background: var(--bg-light); color: var(--text-main); overflow-x: hidden; }
 
-        /* Loading Screen */
-        #loader { position:fixed; inset:0; background:#fff; z-index:9999; display:flex; justify-content:center; align-items:center; transition:0.5s; }
-        .spinner { width:40px; height:40px; border:4px solid #eee; border-top-color:var(--p-green); border-radius:50%; animation:spin 1s linear infinite; }
-        @keyframes spin { to { transform:rotate(360deg); } }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-body); color: var(--text-main); overflow-x: hidden; line-height: 1.6; }
 
-        .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 80px; position: relative; }
+        /* [ANIMATIONS] */
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(46, 204, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* ---------------------------------------------------------
+        [3] LOADING SCREEN
+        ---------------------------------------------------------
+        */
+        #master-loader {
+            position: fixed; inset: 0; background: var(--white); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .loader-logo { width: 80px; height: 80px; background: var(--primary); border-radius: 20px; animation: rotate 2s infinite ease-in-out; }
+        @keyframes rotate { 0% { transform: scale(1) rotate(0); } 50% { transform: scale(1.2) rotate(180deg); border-radius: 50%; } 100% { transform: scale(1) rotate(360deg); } }
+
+        /* ---------------------------------------------------------
+        [4] LOGIN VIEW
+        ---------------------------------------------------------
+        */
+        .view-container { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 90px; }
         
-        /* Login Section */
-        #login-view { padding: 40px 25px; text-align: center; display: block; }
-        .login-card { background: #fff; padding: 30px; border-radius: 30px; box-shadow: var(--shadow); margin-top: 20px; }
-        .input-group { text-align: left; margin-bottom: 20px; }
-        .input-group label { font-size: 0.9rem; color: #636e72; margin-left: 5px; }
-        .input-group input { width: 100%; padding: 15px; border-radius: 15px; border: 1.5px solid #eee; outline: none; transition: 0.3s; margin-top: 5px; }
-        .input-group input:focus { border-color: var(--p-green); box-shadow: 0 0 10px rgba(46,204,113,0.1); }
-        .btn-login { width: 100%; padding: 15px; border: none; border-radius: 15px; background: linear-gradient(to right, var(--p-green), var(--p-blue)); color: #fff; font-size: 1.1rem; cursor: pointer; }
-
-        /* Main Dashboard */
-        #main-view { display: none; }
-        .header { padding: 30px 20px; background: #fff; border-radius: 0 0 30px 30px; box-shadow: var(--shadow); }
-        .balance-card { 
-            background: linear-gradient(135deg, #2ecc71, #3498db); padding: 30px; border-radius: 25px; 
-            color: #fff; margin-top: 15px; position: relative; overflow: hidden;
+        #login-view {
+            padding: 50px 30px; display: flex; flex-direction: column; align-items: center;
+            background: linear-gradient(180deg, #ffffff 0%, #f4f7f6 100%);
         }
-        .balance-card::after { content:''; position:absolute; right:-20px; bottom:-20px; width:100px; height:100px; background:rgba(255,255,255,0.1); border-radius:50%; }
-
-        /* Menu Grid */
-        .menu-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .menu-btn { 
-            background: #fff; padding: 20px; border-radius: 20px; text-align: center; 
-            text-decoration: none; color: inherit; box-shadow: var(--shadow); transition: 0.3s;
+        .login-header { text-align: center; margin-bottom: 40px; }
+        .login-header i { font-size: 4rem; color: var(--primary); margin-bottom: 15px; display: block; }
+        
+        .glass-card {
+            background: var(--white); width: 100%; padding: 35px; border-radius: 35px;
+            box-shadow: var(--shadow-lg); border: 1px solid rgba(255,255,255,0.5);
         }
-        .menu-btn:active { transform: scale(0.95); }
-        .menu-btn i { font-size: 24px; margin-bottom: 10px; display: block; }
-
-        /* Bottom Nav */
-        .bottom-nav { 
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px;
-            background: #fff; display: flex; justify-content: space-around; padding: 15px; 
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-radius: 25px 25px 0 0; z-index: 100;
+        .input-box { margin-bottom: 25px; position: relative; }
+        .input-box label { font-size: 0.85rem; color: var(--text-light); margin-left: 10px; margin-bottom: 8px; display: block; }
+        .input-box input {
+            width: 100%; padding: 16px 20px; border-radius: 18px; border: 2px solid #eee;
+            font-size: 1.1rem; outline: none; transition: var(--transition);
         }
-        .nav-item { text-align: center; color: #b2bec3; cursor: pointer; transition: 0.3s; flex: 1; }
-        .nav-item.active { color: var(--p-green); }
-        .nav-item i { font-size: 20px; }
-        .nav-item span { font-size: 0.7rem; display: block; }
+        .input-box input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(46,204,113,0.1); }
 
-        /* History */
-        .history-section { padding: 0 20px; }
-        .tx-item { background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .st-pending { color: #f1c40f; } .st-success { color: #2ecc71; } .st-cancel { color: #e74c3c; }
+        .btn-main {
+            width: 100%; padding: 18px; border-radius: 20px; border: none;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white; font-size: 1.1rem; font-weight: 500; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.2); transition: var(--transition);
+        }
+        .btn-main:active { transform: scale(0.95); }
+
+        /* ---------------------------------------------------------
+        [5] MAIN DASHBOARD
+        ---------------------------------------------------------
+        */
+        #main-view { display: none; padding: 20px; animation: slideUp 0.6s ease; }
+        
+        .user-profile { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .user-info h2 { font-weight: 600; font-size: 1.4rem; }
+        .user-info p { color: var(--text-light); font-size: 0.9rem; }
+        .avatar { width: 50px; height: 50px; border-radius: 15px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); }
+
+        .wallet-card {
+            background: linear-gradient(135deg, #2ecc71 0%, #3498db 100%);
+            padding: 35px; border-radius: 35px; color: white; position: relative;
+            overflow: hidden; box-shadow: 0 15px 35px rgba(46, 204, 113, 0.3);
+            margin-bottom: 30px;
+        }
+        .wallet-card::before { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; }
+        .wallet-label { font-weight: 300; opacity: 0.9; letter-spacing: 1px; }
+        .wallet-balance { font-size: 2.8rem; font-weight: 600; margin: 10px 0; }
+
+        .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .action-item {
+            background: var(--white); padding: 25px; border-radius: 25px; text-align: center;
+            text-decoration: none; color: inherit; box-shadow: var(--shadow-sm); transition: var(--transition);
+            border: 1px solid transparent;
+        }
+        .action-item:active { transform: scale(0.95); border-color: var(--primary); }
+        .action-item i { font-size: 1.8rem; margin-bottom: 12px; display: block; }
+
+        /* ---------------------------------------------------------
+        [6] TRANSACTION LIST
+        ---------------------------------------------------------
+        */
+        .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
+        .tx-list { display: flex; flex-direction: column; gap: 12px; }
+        .tx-card {
+            background: var(--white); padding: 18px; border-radius: 22px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: var(--shadow-sm); animation: fadeIn 0.5s ease;
+        }
+        .tx-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+        .icon-withdraw { background: rgba(231, 76, 60, 0.1); color: #e74c3c; }
+        
+        .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 8px; font-weight: 500; }
+        .st-pending { background: #fff9e6; color: #f1c40f; }
+        .st-success { background: #eafaf1; color: #2ecc71; }
+        .st-cancel { background: #fdedec; color: #e74c3c; }
+
+        /* ---------------------------------------------------------
+        [7] BOTTOM NAVIGATION BAR
+        ---------------------------------------------------------
+        */
+        .bottom-nav {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 400px; background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px); border-radius: 25px; display: flex;
+            justify-content: space-around; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 1000; border: 1px solid rgba(255,255,255,0.3);
+            display: none;
+        }
+        .nav-link { 
+            text-align: center; color: var(--text-light); text-decoration: none;
+            flex: 1; transition: var(--transition); position: relative;
+        }
+        .nav-link.active { color: var(--primary); }
+        .nav-link i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+        .nav-link span { font-size: 0.7rem; font-weight: 500; }
+        .nav-link.active::after { content: ''; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 20px; height: 4px; background: var(--primary); border-radius: 0 0 5px 5px; }
+
+        /* ---------------------------------------------------------
+        [8] SUB-VIEWS (Bank, Withdraw)
+        ---------------------------------------------------------
+        */
+        .sub-view { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
+        .bank-select-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .bank-option {
+            background: white; border: 2px solid #eee; padding: 15px 5px; border-radius: 15px;
+            text-align: center; cursor: pointer; transition: 0.3s;
+        }
+        .bank-option.selected { border-color: var(--primary); background: rgba(46, 204, 113, 0.05); }
+        .bank-option img { width: 35px; margin-bottom: 5px; border-radius: 8px; }
+        .bank-option p { font-size: 0.7rem; font-weight: 500; }
 
     </style>
 </head>
 <body>
 
-<div id="loader"><div class="spinner"></div></div>
-
-<div class="app-container">
-    <div id="login-view">
-        <i class="fas fa-wallet" style="font-size: 50px; color: var(--p-green); margin-bottom: 15px;"></i>
-        <h2>RSPAY MEMBER</h2>
-        <div class="login-card">
-            <div class="input-group">
-                <label>รหัสสมาชิก 6 หลัก</label>
-                <input type="text" id="log-uid" maxlength="6" placeholder="000000">
-            </div>
-            <div class="input-group">
-                <label>รหัสผ่าน</label>
-                <input type="password" id="log-pw" placeholder="******">
-            </div>
-            <button class="btn-login" onclick="login()">เข้าสู่ระบบ</button>
-        </div>
+    <div id="master-loader">
+        <div class="loader-logo"></div>
+        <h2 style="margin-top:20px; color: var(--primary);">RS PAY</h2>
+        <p style="color:var(--text-light)">ระบบกระเป๋าเงินอัจฉริยะ</p>
     </div>
 
-    <div id="main-view">
-        <div class="header">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3 id="user-display">ยินดีต้อนรับ</h3>
-                <i class="fas fa-bell" style="color:#ccc;"></i>
+    <div class="view-container">
+        
+        <div id="login-view">
+            <div class="login-header">
+                <i class="fas fa-shield-heart animate__animated animate__bounceIn"></i>
+                <h1>ยินดีต้อนรับ</h1>
+                <p>กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
             </div>
-            <div class="balance-card">
-                <p style="font-weight:300; opacity:0.9;">ยอดเงินปัจจุบัน</p>
-                <h1 id="balance-display" style="font-size: 2.5rem; margin: 5px 0;">0.00</h1>
-                <p style="font-size:0.8rem;"><i class="fas fa-sync"></i> อัปเดตอัตโนมัติ</p>
+            <div class="glass-card animate__animated animate__fadeInUp">
+                <div class="input-box">
+                    <label>รหัสสมาชิก 6 หลัก</label>
+                    <input type="text" id="login-id" placeholder="000000" maxlength="6">
+                </div>
+                <div class="input-box">
+                    <label>รหัสผ่าน</label>
+                    <input type="password" id="login-pw" placeholder="••••••••">
+                </div>
+                <button class="btn-main" onclick="handleLogin()">
+                    <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+                </button>
             </div>
         </div>
 
-        <div class="menu-row">
-            <a href="https://riszy.shop/?page=payment" class="menu-btn">
-                <i class="fas fa-plus-circle" style="color:var(--p-blue);"></i>
-                <span>ฝากเงิน</span>
-            </a>
-            <div class="menu-btn" onclick="openWithdraw()">
-                <i class="fas fa-arrow-up-from-bracket" style="color:var(--p-green);"></i>
-                <span>ถอนเงิน</span>
+        <div id="main-view">
+            <div class="user-profile">
+                <div class="user-info">
+                    <p>อรุณสวัสดิ์,</p>
+                    <h2 id="display-name">...</h2>
+                </div>
+                <div class="avatar"><i class="fas fa-user-astronaut" style="color:var(--primary); font-size:1.5rem;"></i></div>
+            </div>
+
+            <div class="wallet-card">
+                <p class="wallet-label">ยอดเงินคงเหลือ</p>
+                <div class="wallet-balance" id="display-balance">0.00</div>
+                <p style="font-size:0.8rem; opacity:0.8;"><i class="fas fa-check-circle"></i> บัญชีความปลอดภัยสูงสุด</p>
+            </div>
+
+            <div class="quick-actions">
+                <a href="https://riszy.shop/?page=payment" class="action-item">
+                    <i class="fas fa-wallet" style="color:var(--secondary);"></i>
+                    <b>ฝากเงิน</b>
+                </a>
+                <div class="action-item" onclick="showSubView('withdraw')">
+                    <i class="fas fa-hand-holding-dollar" style="color:var(--primary);"></i>
+                    <b>ถอนเงิน</b>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <h3>ประวัติล่าสุด</h3>
+                <small style="color:var(--primary); font-weight:500;">ดูทั้งหมด</small>
+            </div>
+            <div class="tx-list" id="history-container">
+                </div>
+        </div>
+
+        <div id="withdraw-view" class="sub-view">
+            <div style="display:flex; align-items:center; margin-bottom:30px;">
+                <i class="fas fa-arrow-left" onclick="showSubView('home')" style="font-size:1.5rem; margin-right:20px;"></i>
+                <h2>แจ้งถอนเงิน</h2>
+            </div>
+            <div class="glass-card">
+                <p style="color:var(--text-light); text-align:center; margin-bottom:10px;">ยอดเงินที่ถอนได้</p>
+                <h1 style="text-align:center; color:var(--primary); margin-bottom:30px;" id="wd-max">0.00</h1>
+                
+                <div class="input-box">
+                    <label>จำนวนเงิน (ขั้นต่ำ 20)</label>
+                    <input type="number" id="wd-amount" placeholder="0.00">
+                </div>
+                
+                <div id="wd-bank-info" style="margin-bottom:20px; padding:15px; background:#f9f9f9; border-radius:15px; border:1px dashed #ddd; display:none;">
+                    </div>
+
+                <button class="btn-main" onclick="executeWithdraw()">ยืนยันการถอนเงิน</button>
             </div>
         </div>
 
-        <div class="history-section" id="section-history">
-            <h4 style="margin-bottom: 15px;">ประวัติรายการ 10 ล่าสุด</h4>
-            <div id="tx-list"></div>
+        <div id="bank-view" class="sub-view">
+            <div style="display:flex; align-items:center; margin-bottom:30px;">
+                <i class="fas fa-arrow-left" onclick="showSubView('home')" style="font-size:1.5rem; margin-right:20px;"></i>
+                <h2>ตั้งค่าธนาคาร</h2>
+            </div>
+            <div class="glass-card">
+                <div class="bank-select-grid">
+                    <div class="bank-option" onclick="selectBank('TrueMoney', this)">
+                        <img src="https://riszy.shop/payment/assets/img/true-wallet.png" alt="TMN">
+                        <p>วอลเล็ท</p>
+                    </div>
+                    <div class="bank-option" onclick="selectBank('กสิกรไทย', this)">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Kasikornbank_Logo.svg/1200px-Kasikornbank_Logo.svg.png" alt="KBNK">
+                        <p>กสิกร</p>
+                    </div>
+                    <div class="bank-option" onclick="selectBank('ไทยพาณิชย์', this)">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/SCB_Logo.png" alt="SCB">
+                        <p>SCB</p>
+                    </div>
+                </div>
+
+                <div class="input-box">
+                    <label>เลขบัญชี / เบอร์มือถือ</label>
+                    <input type="text" id="bank-acc" placeholder="ระบุเลขบัญชีที่ถูกต้อง">
+                </div>
+                <div class="input-box">
+                    <label>ชื่อบัญชี</label>
+                    <input type="text" id="bank-name" placeholder="ชื่อ-นามสกุล">
+                </div>
+                <button class="btn-main" onclick="saveBankSettings()">บันทึกข้อมูล</button>
+            </div>
         </div>
+
     </div>
 
-    <div class="bottom-nav" id="bot-nav" style="display:none;">
-        <div class="nav-item active" onclick="showTab('home')"><i class="fas fa-home"></i><span>หน้าแรก</span></div>
-        <div class="nav-item" onclick="openBankProfile()"><i class="fas fa-university"></i><span>ธนาคาร</span></div>
-        <div class="nav-item" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i><span>ออก</span></div>
-    </div>
-</div>
+    <nav class="bottom-nav" id="main-nav">
+        <div class="nav-link active" onclick="showSubView('home', this)">
+            <i class="fas fa-house"></i><span>หน้าหลัก</span>
+        </div>
+        <div class="nav-link" onclick="showSubView('bank', this)">
+            <i class="fas fa-university"></i><span>ธนาคาร</span>
+        </div>
+        <div class="nav-link" onclick="handleLogout()">
+            <i class="fas fa-power-off"></i><span>ออก</span>
+        </div>
+    </nav>
 
-<script>
-    // --- FIREBASE CONFIG ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyCrpBKrWplX3qQT_h-QMftmaTSV71sikf4",
-        authDomain: "fnag-b078c.firebaseapp.com",
-        projectId: "fnag-b078c",
-        storageBucket: "fnag-b078c.firebasestorage.app",
-        messagingSenderId: "168663975101",
-        appId: "1:168663975101:web:84b93e4a74494349df23d4"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    <script>
+        // 1. Firebase Config (ใช้ตัวจริงของคุณ)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrpBKrWplX3qQT_h-QMftmaTSV71sikf4",
+            authDomain: "fnag-b078c.firebaseapp.com",
+            projectId: "fnag-b078c",
+            storageBucket: "fnag-b078c.firebasestorage.app",
+            messagingSenderId: "168663975101",
+            appId: "1:168663975101:web:84b93e4a74494349df23d4"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    let currentUser = null;
+        let sessionUser = null;
+        let selectedBankName = "";
 
-    window.onload = () => { setTimeout(() => document.getElementById('loader').style.display='none', 800); };
-
-    async function login() {
-        const uid = document.getElementById('log-uid').value;
-        const pw = document.getElementById('log-pw').value;
-        const userDoc = await db.collection('users').doc(uid).get();
-        if(userDoc.exists && userDoc.data().password === pw) {
-            currentUser = { id: uid, ...userDoc.data() };
-            startApp();
-        } else {
-            Swal.fire('ผิดพลาด', 'ไอดีหรือรหัสผ่านไม่ถูกต้อง', 'error');
-        }
-    }
-
-    function startApp() {
-        document.getElementById('login-view').style.display = 'none';
-        document.getElementById('main-view').style.display = 'block';
-        document.getElementById('bot-nav').style.display = 'flex';
-        document.getElementById('user-display').innerText = 'สวัสดี, ' + currentUser.name;
-
-        // Real-time Balance
-        db.collection('users').doc(currentUser.id).onSnapshot(doc => {
-            document.getElementById('balance-display').innerText = doc.data().balance.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ฿';
+        // 2. Lifecycle
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('master-loader').style.display = 'none';
+            }, 1500);
         });
 
-        // Real-time History
-        db.collection('transactions').where('uid', '==', currentUser.id).orderBy('timestamp','desc').limit(10).onSnapshot(snap => {
+        // 3. Auth Logic
+        async function handleLogin() {
+            const uid = document.getElementById('login-id').value;
+            const pw = document.getElementById('login-pw').value;
+
+            if (uid.length !== 6) return Toast('ID ต้องเป็นตัวเลข 6 หลัก', 'error');
+
+            try {
+                const userDoc = await db.collection('users').doc(uid).get();
+                if (userDoc.exists && userDoc.data().password === pw) {
+                    sessionUser = { id: uid, ...userDoc.data() };
+                    initializeDashboard();
+                } else {
+                    Toast('ข้อมูลเข้าสู่ระบบไม่ถูกต้อง', 'error');
+                }
+            } catch (err) { Toast('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error'); }
+        }
+
+        function initializeDashboard() {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('main-view').style.display = 'block';
+            document.getElementById('main-nav').style.display = 'flex';
+            
+            // Listen for Real-time Balance
+            db.collection('users').doc(sessionUser.id).onSnapshot(doc => {
+                const data = doc.data();
+                sessionUser = { id: doc.id, ...data };
+                document.getElementById('display-name').innerText = data.name;
+                document.getElementById('display-balance').innerText = data.balance.toLocaleString(undefined, {minimumFractionDigits: 2});
+                document.getElementById('wd-max').innerText = data.balance.toLocaleString();
+                
+                // Update Bank View
+                document.getElementById('bank-acc').value = data.bankAcc || "";
+                document.getElementById('bank-name').value = data.bankName || "";
+            });
+
+            // Listen for Real-time History
+            db.collection('transactions')
+                .where('uid', '==', sessionUser.id)
+                .orderBy('timestamp', 'desc')
+                .limit(10)
+                .onSnapshot(snap => {
+                    renderHistory(snap);
+                });
+        }
+
+        // 4. UI Routing
+        function showSubView(viewName, el) {
+            document.getElementById('main-view').style.display = 'none';
+            document.getElementById('withdraw-view').style.display = 'none';
+            document.getElementById('bank-view').style.display = 'none';
+            
+            document.getElementById(viewName + '-view').style.display = 'block';
+
+            if(el) {
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                el.classList.add('active');
+            }
+
+            if(viewName === 'withdraw') {
+                if(!sessionUser.bankAcc) {
+                    Swal.fire('ข้อมูลไม่ครบ', 'กรุณาตั้งค่าบัญชีธนาคารก่อนทำรายการ', 'info');
+                    showSubView('bank');
+                } else {
+                    document.getElementById('wd-bank-info').style.display = 'block';
+                    document.getElementById('wd-bank-info').innerHTML = `
+                        <small>โอนเข้าบัญชี:</small><br>
+                        <b>${sessionUser.bank} - ${sessionUser.bankAcc}</b><br>
+                        <small>ชื่อ: ${sessionUser.bankName}</small>
+                    `;
+                }
+            }
+        }
+
+        // 5. Withdrawal Logic
+        async function executeWithdraw() {
+            const amount = parseFloat(document.getElementById('wd-amount').value);
+            
+            // Validation
+            const settings = await db.collection('settings').doc('system').get();
+            if(settings.data().withdraw_status !== 'open') return Toast('ระบบปิดถอนชั่วคราว', 'warning');
+
+            if(!amount || amount < 20) return Toast('ถอนขั้นต่ำ 20 บาท', 'error');
+            if(amount > sessionUser.balance) return Toast('ยอดเงินไม่เพียงพอ', 'error');
+
+            Swal.fire({
+                title: 'ยืนยันการถอน?',
+                text: `จำนวน ${amount} บาท`,
+                showCancelButton: true,
+                confirmButtonColor: '#2ecc71'
+            }).then(async (res) => {
+                if(res.isConfirmed) {
+                    const batch = db.batch();
+                    const txRef = db.collection('transactions').doc();
+                    
+                    // Deduct Balance Immediately
+                    batch.update(db.collection('users').doc(sessionUser.id), {
+                        balance: sessionUser.balance - amount
+                    });
+
+                    // Create Transaction
+                    batch.set(txRef, {
+                        uid: sessionUser.id,
+                        name: sessionUser.name,
+                        amount: amount,
+                        bank: sessionUser.bank,
+                        bankAcc: sessionUser.bankAcc,
+                        bankName: sessionUser.bankName,
+                        status: 'pending',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        dateStr: new Date().toLocaleString('th-TH')
+                    });
+
+                    await batch.commit();
+                    Toast('ส่งคำขอสำเร็จ รอดำเนินการ', 'success');
+                    document.getElementById('wd-amount').value = '';
+                    showSubView('home');
+                }
+            });
+        }
+
+        // 6. Bank Profile Logic
+        function selectBank(name, el) {
+            selectedBankName = name;
+            document.querySelectorAll('.bank-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        async function saveBankSettings() {
+            const acc = document.getElementById('bank-acc').value;
+            const name = document.getElementById('bank-name').value;
+            
+            if(!selectedBankName || !acc || !name) return Toast('กรุณาระบุข้อมูลให้ครบ', 'warning');
+
+            await db.collection('users').doc(sessionUser.id).update({
+                bank: selectedBankName,
+                bankAcc: acc,
+                bankName: name
+            });
+            Toast('บันทึกข้อมูลธนาคารแล้ว', 'success');
+        }
+
+        // 7. Helpers
+        function renderHistory(snap) {
             let html = '';
+            if(snap.empty) {
+                html = '<div style="text-align:center; padding:30px; color:#ccc;">ไม่มีประวัติรายการ</div>';
+            }
             snap.forEach(doc => {
                 const tx = doc.data();
-                const stClass = 'st-' + tx.status;
-                html += `<div class="tx-item">
-                    <div><b>ถอนเงิน</b><br><small style="color:#ccc">${tx.dateStr}</small></div>
-                    <div style="text-align:right"><b class="${stClass}">${tx.amount} ฿</b><br><small>${tx.status}</small></div>
+                html += `
+                <div class="tx-card">
+                    <div style="display:flex; align-items:center;">
+                        <div class="tx-icon icon-withdraw"><i class="fas fa-arrow-up"></i></div>
+                        <div>
+                            <b>ถอนเงิน</b><br>
+                            <small style="color:#999">${tx.dateStr}</small>
+                        </div>
+                    </div>
+                    <div style="text-align:right">
+                        <b style="font-size:1.1rem">-${tx.amount}</b><br>
+                        <span class="status-badge st-${tx.status}">${tx.status}</span>
+                    </div>
                 </div>`;
             });
-            document.getElementById('tx-list').innerHTML = html || '<p style="text-align:center; color:#ccc;">ไม่มีรายการ</p>';
-        });
-    }
-
-    async function openWithdraw() {
-        const settings = await db.collection('settings').doc('system').get();
-        if(settings.data().withdraw_status === 'closed') return Swal.fire('แจ้งเตือน', 'ระบบถอนเงินปิดปรับปรุง', 'warning');
-
-        const u = (await db.collection('users').doc(currentUser.id).get()).data();
-        if(!u.bankAcc) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาตั้งค่าบัญชีธนาคารก่อนถอน', 'info');
-
-        const { value: amt } = await Swal.fire({
-            title: 'ระบุยอดเงินที่ต้องการถอน',
-            input: 'number',
-            inputAttributes: { min: 20 },
-            showCancelButton: true,
-            confirmButtonText: 'ถอนเงิน'
-        });
-
-        if(amt) {
-            const amount = parseFloat(amt);
-            if(amount < 20) return Swal.fire('ผิดพลาด', 'ถอนขั้นต่ำ 20 บาท', 'error');
-            if(amount > u.balance) return Swal.fire('ผิดพลาด', 'ยอดเงินไม่เพียงพอ', 'error');
-
-            const batch = db.batch();
-            const txRef = db.collection('transactions').doc();
-            batch.update(db.collection('users').doc(currentUser.id), { balance: u.balance - amount });
-            batch.set(txRef, {
-                uid: currentUser.id, name: u.name, amount: amount,
-                bank: u.bank, bankAcc: u.bankAcc, status: 'pending',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                dateStr: new Date().toLocaleString('th-TH')
-            });
-            await batch.commit();
-            Swal.fire('สำเร็จ', 'ส่งคำขอถอนเงินเรียบร้อยแล้ว', 'success');
+            document.getElementById('history-container').innerHTML = html;
         }
-    }
 
-    async function openBankProfile() {
-        const u = (await db.collection('users').doc(currentUser.id).get()).data();
-        const { value: formValues } = await Swal.fire({
-            title: 'ตั้งค่าบัญชีรับเงิน',
-            html: `
-                <select id="sw-bank" class="swal2-input">
-                    <option value="TrueMoney" ${u.bank=='TrueMoney'?'selected':''}>TrueMoney Wallet</option>
-                    <option value="กสิกรไทย" ${u.bank=='กสิกรไทย'?'selected':''}>ธ.กสิกรไทย</option>
-                    <option value="ไทยพาณิชย์" ${u.bank=='ไทยพาณิชย์'?'selected':''}>ธ.ไทยพาณิชย์</option>
-                    <option value="กรุงไทย" ${u.bank=='กรุงไทย'?'selected':''}>ธ.กรุงไทย</option>
-                    <option value="กรุงเทพ" ${u.bank=='กรุงเทพ'?'selected':''}>ธ.กรุงเทพ</option>
-                </select>
-                <input id="sw-acc" class="swal2-input" placeholder="เลขบัญชี / เบอร์วอลเล็ท" value="${u.bankAcc || ''}">
-            `,
-            preConfirm: () => ({ bank: document.getElementById('sw-bank').value, bankAcc: document.getElementById('sw-acc').value })
-        });
-        if(formValues) {
-            await db.collection('users').doc(currentUser.id).update(formValues);
-            Swal.fire('สำเร็จ', 'บันทึกข้อมูลแล้ว', 'success');
+        function Toast(msg, icon) {
+            Swal.fire({ toast: true, position: 'top', icon: icon, title: msg, showConfirmButton: false, timer: 2000 });
         }
-    }
-</script>
+
+        function handleLogout() {
+            location.reload();
+        }
+
+    </script>
 </body>
 </html>
