@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RSPAY | รับฝาก ถอน เงิน</title>
+    <title>RSPAY | Wallet System</title>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -88,7 +88,8 @@
 
         /* Form Controls */
         .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-muted); padding-left: 5px; }
+        .input-group label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text-main); font-weight: 500; padding-left: 5px; }
+        .input-group label i { margin-right: 5px; color: var(--primary); width: 20px; }
         .input-group input, .input-group select {
             width: 100%; padding: 14px 18px; border-radius: 14px; border: 1px solid #e2e8f0;
             background: #f8fafc; font-size: 1rem; outline: none; transition: 0.3s;
@@ -107,7 +108,7 @@
             display: flex; justify-content: space-around; padding: 12px 5px 25px;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 1000;
         }
-        .nav-link { text-decoration: none; color: #94a3b8; text-align: center; flex: 1; transition: 0.3s; }
+        .nav-link { text-decoration: none; color: #94a3b8; text-align: center; flex: 1; transition: 0.3s; cursor: pointer; }
         .nav-link i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
         .nav-link span { font-size: 0.75rem; font-weight: 500; }
         .nav-link.active { color: var(--primary-dark); }
@@ -117,7 +118,8 @@
         .login-card { background: white; width: 100%; max-width: 400px; padding: 35px; border-radius: 30px; box-shadow: var(--card-shadow); border-bottom: 6px solid var(--primary); }
 
         /* Badge Status */
-        .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; }
+        .badge i { margin-right: 4px; font-size: 0.7rem; }
         .b-pending { background: #fef3c7; color: #92400e; }
         .b-success { background: #dcfce7; color: #166534; }
         .b-cancel { background: #fee2e2; color: #991b1b; }
@@ -135,15 +137,15 @@
                 <p style="color:#64748b; font-size:0.9rem;">กรุณาเข้าสู่ระบบด้วยรหัสของคุณ</p>
             </div>
             <div class="input-group">
-                <label>รหัสสมาชิก 6 หลัก</label>
+                <label><i class="fas fa-user-tag"></i> รหัสสมาชิก 6 หลัก</label>
                 <input type="text" id="log-id" placeholder="000000" maxlength="6">
             </div>
             <div class="input-group">
-                <label>รหัสผ่าน</label>
+                <label><i class="fas fa-lock"></i> รหัสผ่าน</label>
                 <input type="password" id="log-pw" placeholder="********">
             </div>
-            <button class="btn-action" onclick="handleLogin()">เข้าสู่ระบบ</button>
-            <a href="https://riszy.shop/?page=contact" style="display:block; text-align:center; margin-top:20px; font-size:0.85rem; color:var(--primary-dark); text-decoration:none;">👉กดที่นี้ ลืมรหัสผ่านหรือสมัครสมาชิก?</a>
+            <button class="btn-action" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ</button>
+            <a href="https://riszy.shop/?page=contact" style="display:block; text-align:center; margin-top:20px; font-size:0.85rem; color:var(--primary-dark); text-decoration:none; font-weight:500;">👉 ลืมรหัสผ่านหรือสมัครสมาชิก?</a>
         </div>
     </div>
 
@@ -153,7 +155,7 @@
             <div class="header-bg">
                 <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="text-align:left;">
-                        <p style="opacity:0.8; font-size:0.85rem;">RS ฝาก-ถอน</p>
+                        <p style="opacity:0.8; font-size:0.85rem;"><i class="fas fa-shield-halved"></i> RSPAY ฝาก-ถอน</p>
                         <h2 id="user-name" style="font-weight:600;">...</h2>
                     </div>
                     <div onclick="navigate('help')" style="cursor:pointer; background:rgba(255,255,255,0.2); padding:8px 15px; border-radius:12px; font-size:0.85rem;">
@@ -163,28 +165,28 @@
             </div>
             <div class="container">
                 <div class="main-card">
-                    <p>ยอดเงินคงเหลือในระบบ</p>
+                    <p><i class="fas fa-chart-pie"></i> ยอดเงินคงเหลือในระบบ</p>
                     <div class="balance" id="user-bal">0.00</div>
                     <div style="background:#f1f5f9; padding:8px; border-radius:10px; display:inline-block; font-size:0.75rem; color:#64748b;">
-                        <i class="fas fa-shield-alt"></i> หากต้องการทราบยอดเงินล่าสุดกรุณาติดต่อแอดมิน
+                        <i class="fas fa-info-circle"></i> หากยอดเงินไม่ขึ้น กรุณาติดต่อแอดมิน
                     </div>
                 </div>
 
                 <div class="menu-grid">
                     <a href="https://riszy.shop/?page=payment" class="menu-item">
-                        <i class="fas fa-coins"></i>
+                        <i class="fas fa-coins" style="color:#f59e0b;"></i>
                         <span>เติมเงิน</span>
                     </a>
                     <div class="menu-item" onclick="navigate('withdraw')" style="cursor:pointer;">
-                        <i class="fas fa-hand-holding-usd"></i>
+                        <i class="fas fa-paper-plane" style="color:#3b82f6;"></i>
                         <span>ถอนเงิน</span>
                     </div>
                     <div class="menu-item" onclick="navigate('help')" style="cursor:pointer;">
-                        <i class="fas fa-book-open"></i>
+                        <i class="fas fa-lightbulb" style="color:#8b5cf6;"></i>
                         <span>วิธีใช้งาน</span>
                     </div>
                     <a href="https://riszy.shop/?page=contact" class="menu-item">
-                        <i class="fas fa-headset"></i>
+                        <i class="fas fa-comments" style="color:#ec4899;"></i>
                         <span>ติดต่อแอดมิน</span>
                     </a>
                 </div>
@@ -193,41 +195,43 @@
 
         <div id="withdraw" class="page container">
             <div style="padding:25px 0 15px; display:flex; align-items:center;">
-                <i class="fas fa-chevron-left" onclick="navigate('home')" style="font-size:1.2rem; margin-right:15px; cursor:pointer;"></i>
+                <i class="fas fa-arrow-left" onclick="navigate('home')" style="font-size:1.2rem; margin-right:15px; cursor:pointer; color:var(--text-muted);"></i>
                 <h2 style="font-size:1.4rem;">แจ้งถอนเงิน</h2>
             </div>
             <div class="section-box">
                 <div class="input-group">
-                    <label>จำนวนเงิน (ถอนขั้นต่ำ 20 บาท)</label>
-                    <input type="number" id="wd-amount" placeholder="ระบุจำนวนเงิน">
+                    <label><i class="fas fa-hand-holding-dollar"></i> จำนวนเงิน (ถอนขั้นต่ำ 20 บาท)</label>
+                    <input type="number" id="wd-amount" placeholder="0.00">
                 </div>
                 <div class="input-group">
-                    <label>รับเงินผ่านบัญชี</label>
+                    <label><i class="fas fa-university"></i> รับเงินผ่านบัญชี</label>
                     <input type="text" id="wd-bank-info" readonly style="background:#f1f5f9; color:#64748b;">
                 </div>
-                <p style="font-size:0.8rem; color:#ef4444; margin-bottom:15px;">*โปรดตรวจสอบชื่อบัญชีให้ถูกต้องก่อนทำรายการ</p>
-                <button class="btn-action" onclick="submitWithdraw()">ยืนยันการถอนเงิน</button>
+                <p style="font-size:0.8rem; color:#ef4444; margin-bottom:15px; background:#fff1f2; padding:10px; border-radius:10px; border:1px solid #fecaca;">
+                    <i class="fas fa-exclamation-triangle"></i> โปรดตรวจสอบชื่อบัญชีให้ถูกต้อง หากข้อมูลผิดพลาดจะไม่สามารถแก้ไขได้
+                </p>
+                <button class="btn-action" onclick="submitWithdraw()"><i class="fas fa-check-circle"></i> ยืนยันการถอนเงิน</button>
             </div>
         </div>
 
         <div id="help" class="page container">
             <div style="padding:25px 0 15px;">
-                <h2 style="font-size:1.4rem;"><i class="fas fa-book-open" style="color:var(--primary);"></i> วิธีใช้งานระบบ</h2>
+                <h2 style="font-size:1.4rem;"><i class="fas fa-graduation-cap" style="color:var(--primary);"></i> วิธีใช้งานระบบ</h2>
             </div>
             
             <div class="section-box">
                 <div class="section-title"><i class="fas fa-plus-circle"></i> ขั้นตอนการเติมเงิน</div>
                 <div class="step-item">
                     <div class="step-num">1</div>
-                    <div class="step-text"><h4>ไปที่หน้าเติมเงิน หรือติดต่อเเอดมิน</h4><p>กดปุ่ม "เติมเงิน" ที่หน้าหลัก ระบบจะพาไปยังเว็บเติมเงิน</p></div>
+                    <div class="step-text"><h4>ไปที่หน้าเติมเงิน หรือ ติดต่อเเอดมิน</h4><p>กดปุ่ม "เติมเงิน" หรือติดต่อแอดมินโดยตรง</p></div>
                 </div>
                 <div class="step-item">
                     <div class="step-num">2</div>
-                    <div class="step-text"><h4>แจ้งชำระเงิน</h4><p>โอนเงินและแนบสลิปให้เรียบร้อย</p></div>
+                    <div class="step-text"><h4>แจ้งชำระเงิน</h4><p>โอนเงินและส่งสลิปหลักฐานให้เรียบร้อย</p></div>
                 </div>
                 <div class="step-item">
                     <div class="step-num">3</div>
-                    <div class="step-text"><h4>รอรับยอด</h4><p>เมื่อแอดมินตรวจสอบเสร็จ ยอดเงินจะเข้ากระเป๋าที่หน้านี้อัตโนมัติ</p></div>
+                    <div class="step-text"><h4>รอรับยอด</h4><p>ยอดเงินจะเข้ากระเป๋าอัตโนมัติเมื่อตรวจสอบสำเร็จ</p></div>
                 </div>
             </div>
 
@@ -235,26 +239,26 @@
                 <div class="section-title"><i class="fas fa-minus-circle"></i> ขั้นตอนการถอนเงิน</div>
                 <div class="step-item">
                     <div class="step-num">1</div>
-                    <div class="step-text"><h4>ตั้งค่าบัญชี</h4><p>ไปที่เมนู "บัญชี" เพื่อกรอกเลขบัญชีที่ต้องการรับเงิน</p></div>
+                    <div class="step-text"><h4>ตั้งค่าบัญชี</h4><p>กรอกเลขบัญชีที่ต้องการรับเงินในเมนู "บัญชี"</p></div>
                 </div>
                 <div class="step-item">
                     <div class="step-num">2</div>
-                    <div class="step-text"><h4>ระบุจำนวนเงิน</h4><p>ใส่ยอดเงินที่ต้องการถอน (ต้องมีพอในระบบ)</p></div>
+                    <div class="step-text"><h4>ระบุยอดถอน</h4><p>ใส่ยอดเงินที่ต้องการถอน (ขั้นต่ำ 20 บาท)</p></div>
                 </div>
                 <div class="step-item">
                     <div class="step-num">3</div>
-                    <div class="step-text"><h4>รอแอดมินโอน</h4><p>แอดมินจะดำเนินการภายใน 5-15 นาที ตรวจสอบสถานะที่ "ประวัติ"</p></div>
+                    <div class="step-text"><h4>รอแอดมินโอน</h4><p>รอการโอนเงินเข้าบัญชีภายใน 5-15 นาที</p></div>
                 </div>
             </div>
 
-            <a href="https://riszy.shop/?page=contact" class="btn-action" style="text-decoration:none; display:block; text-align:center; margin-top:20px; background:#3b82f6;">พบปัญหา ติดต่อเรา</a>
+            <a href="https://riszy.shop/?page=contact" class="btn-action" style="text-decoration:none; display:block; text-align:center; margin-top:20px; background:#3b82f6;"><i class="fab fa-line"></i> ติดต่อเจ้าหน้าที่</a>
         </div>
 
         <div id="bank" class="page container">
             <div style="padding:25px 0 15px;"><h2 style="font-size:1.4rem;">ตั้งค่าบัญชีรับเงิน</h2></div>
             <div class="section-box">
                 <div class="input-group">
-                    <label>เลือกธนาคาร/วอลเล็ท</label>
+                    <label><i class="fas fa-building-columns"></i> เลือกธนาคาร/วอลเล็ท</label>
                     <select id="bank-name-select">
                         <option value="TrueMoney Wallet">TrueMoney Wallet</option>
                         <option value="ธนาคารกสิกรไทย">ธนาคารกสิกรไทย</option>
@@ -264,61 +268,60 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>เลขบัญชี / เบอร์วอลเล็ท</label>
-                    <input type="text" id="bank-acc" placeholder="ระบุเลขที่บัญชี">
+                    <label><i class="fas fa-credit-card"></i> เลขบัญชี / เบอร์วอลเล็ท</label>
+                    <input type="text" id="bank-acc" placeholder="ระบุเลขที่บัญชีของคุณ">
                 </div>
                 <div class="input-group">
-                    <label>ชื่อเจ้าของบัญชี</label>
-                    <input type="text" id="bank-owner" placeholder="ระบุชื่อจริง-นามสกุล">
+                    <label><i class="fas fa-user-check"></i> ชื่อเจ้าของบัญชี</label>
+                    <input type="text" id="bank-owner" placeholder="ชื่อ-นามสกุล (ภาษาไทย)">
                 </div>
-                <button class="btn-action" onclick="saveBank()">บันทึกข้อมูลบัญชี</button>
+                <button class="btn-action" onclick="saveBank()"><i class="fas fa-save"></i> บันทึกข้อมูลบัญชี</button>
             </div>
         </div>
 
         <div id="history" class="page container">
             <div style="padding:25px 0 15px;"><h2 style="font-size:1.4rem;">ประวัติการทำรายการ</h2></div>
             <div id="history-list">
-                <p style="text-align:center; padding:40px; color:#94a3b8;">กำลังโหลดประวัติ...</p>
+                <p style="text-align:center; padding:40px; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> กำลังโหลด...</p>
             </div>
         </div>
 
         <div id="profile" class="page container">
-            <div style="padding:25px 0 15px;"><h2 style="font-size:1.4rem;">ข้อมูลของฉัน</h2></div>
+            <div style="padding:25px 0 15px;"><h2 style="font-size:1.4rem;">ข้อมูลสมาชิก</h2></div>
             <div class="section-box" style="text-align:center;">
-                <div style="width:80px; height:80px; background:#e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px;">
-                    <i class="fas fa-user" style="font-size:2rem; color:#64748b;"></i>
+                <div style="width:80px; height:80px; background:linear-gradient(135deg, #e2e8f0, #cbd5e1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; border:4px solid white; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+                    <i class="fas fa-user-circle" style="font-size:3rem; color:#64748b;"></i>
                 </div>
-                <h3 id="prof-name-display" style="font-weight:600;">...</h3>
-                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">ID: <span id="prof-id-display">...</span></p>
+                <h3 id="prof-name-display" style="font-weight:600; font-size:1.3rem;">...</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">สมาชิก ID: <span id="prof-id-display" style="font-weight:700; color:var(--primary-dark);">...</span></p>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <a href="https://riszy.shop/?page=contact" class="btn-action" style="background:#3b82f6; text-decoration:none; font-size:0.9rem;"><i class="fas fa-headset"></i> ติดต่อเเอดมิน</a>
+                    <a href="https://riszy.shop/?page=contact" class="btn-action" style="background:#3b82f6; text-decoration:none; font-size:0.9rem;"><i class="fas fa-headset"></i>ติดต่อแอดมิน</a>
                     <button class="btn-action" style="background:#ef4444; font-size:0.9rem;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
                 </div>
             </div>
         </div>
 
         <div class="nav-bar">
-            <a onclick="navigate('home')" class="nav-link active" id="nav-home">
+            <div onclick="navigate('home')" class="nav-link active" id="nav-home">
                 <i class="fas fa-home"></i>
                 <span>หน้าหลัก</span>
-            </a>
-            <a onclick="navigate('bank')" class="nav-link" id="nav-bank">
+            </div>
+            <div onclick="navigate('bank')" class="nav-link" id="nav-bank">
                 <i class="fas fa-university"></i>
                 <span>บัญชี</span>
-            </a>
-            <a onclick="navigate('history')" class="nav-link" id="nav-history">
-                <i class="fas fa-receipt"></i>
+            </div>
+            <div onclick="navigate('history')" class="nav-link" id="nav-history">
+                <i class="fas fa-history"></i>
                 <span>ประวัติ</span>
-            </a>
-            <a onclick="navigate('profile')" class="nav-link" id="nav-profile">
-                <i class="fas fa-user-circle"></i>
-                <span>โปรไฟล์</span>
-            </a>
+            </div>
+            <div onclick="navigate('profile')" class="nav-link" id="nav-profile">
+                <i class="fas fa-user-cog"></i>
+                <span>ข้อมูล</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // ⚠️ ใส่ Firebase Config ของคุณ
         const firebaseConfig = {
             apiKey: "AIzaSyCrpBKrWplX3qQT_h-QMftmaTSV71sikf4",
             projectId: "fnag-b078c"
@@ -328,7 +331,6 @@
 
         let myUser = null;
 
-        // Router
         function navigate(pageId) { window.location.hash = pageId; }
         window.addEventListener('hashchange', handleHash);
 
@@ -345,13 +347,12 @@
             window.scrollTo(0, 0);
         }
 
-        // Auth
         async function handleLogin() {
             const uid = document.getElementById('log-id').value;
             const pw = document.getElementById('log-pw').value;
             if(!uid || !pw) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกไอดีและรหัสผ่าน', 'warning');
             
-            Swal.fire({title: 'กำลังตรวจสอบ...', didOpen: () => {Swal.showLoading()}});
+            Swal.fire({title: 'กำลังเข้าสู่ระบบ...', didOpen: () => {Swal.showLoading()}});
             
             try {
                 const doc = await db.collection('users').doc(uid).get();
@@ -361,9 +362,9 @@
                     Swal.close();
                     setupApp(uid);
                 } else {
-                    Swal.fire('เข้าสู่ระบบล้มเหลว', 'ไอดีหรือรหัสผ่านผิด', 'error');
+                    Swal.fire('ล้มเหลว', 'ไอดีหรือรหัสผ่านผิด', 'error');
                 }
-            } catch(e) { Swal.fire('เกิดข้อผิดพลาด', 'โปรดลองใหม่', 'error'); }
+            } catch(e) { Swal.fire('Error', 'ไม่สามารถเชื่อมต่อได้', 'error'); }
         }
 
         function setupApp(uid) {
@@ -381,12 +382,24 @@
 
         function startRealtime(uid) {
             db.collection('users').doc(uid).onSnapshot(doc => {
+                if (!doc.exists) return;
                 myUser = { id: uid, ...doc.data() };
+                
+                // อัปเดตข้อมูลหน้าหลัก
                 document.getElementById('user-name').innerText = myUser.name;
                 document.getElementById('user-bal').innerText = (myUser.balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2});
+                
+                // อัปเดตข้อมูลหน้าโปรไฟล์
                 document.getElementById('prof-name-display').innerText = myUser.name;
                 document.getElementById('prof-id-display').innerText = uid;
+                
+                // อัปเดตข้อมูลหน้าถอนเงิน
                 document.getElementById('wd-bank-info').value = myUser.bank ? `${myUser.bank} - ${myUser.bankAcc}` : "ยังไม่ได้ตั้งค่าบัญชี";
+
+                // ✅ แก้บัคข้อมูลบัญชีหาย: หยอดข้อมูลลงในหน้าแก้ไขบัญชีให้อัตโนมัติ
+                if(myUser.bank) document.getElementById('bank-name-select').value = myUser.bank;
+                if(myUser.bankAcc) document.getElementById('bank-acc').value = myUser.bankAcc;
+                if(myUser.bankName) document.getElementById('bank-owner').value = myUser.bankName;
             });
         }
 
@@ -394,31 +407,36 @@
             const bank = document.getElementById('bank-name-select').value;
             const acc = document.getElementById('bank-acc').value;
             const owner = document.getElementById('bank-owner').value;
-            if(!acc || !owner) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกเลขบัญชีและชื่อให้ครบ', 'warning');
+            if(!acc || !owner) return Swal.fire('คำแนะนำ', 'กรุณากรอกข้อมูลบัญชีให้ครบทุกช่อง', 'info');
 
-            await db.collection('users').doc(myUser.id).update({ bank, bankAcc: acc, bankName: owner });
-            Swal.fire('บันทึกสำเร็จ', 'ข้อมูลบัญชีถูกอัปเดตแล้ว', 'success').then(() => navigate('home'));
+            Swal.fire({title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            try {
+                await db.collection('users').doc(myUser.id).update({ bank, bankAcc: acc, bankName: owner });
+                Swal.fire('บันทึกสำเร็จ', 'ข้อมูลบัญชีของคุณได้รับการอัปเดตแล้ว', 'success').then(() => navigate('home'));
+            } catch(e) { Swal.fire('Error', 'ไม่สามารถบันทึกได้', 'error'); }
         }
 
         async function submitWithdraw() {
             const amount = parseFloat(document.getElementById('wd-amount').value);
             const sys = await db.collection('settings').doc('system').get();
             
-            if(sys.exists && sys.data().withdraw_status === 'closed') return Swal.fire('ปิดระบบ', 'ระบบถอนเงินปิดปรับปรุงชั่วคราว', 'info');
-            if(!myUser.bank) return Swal.fire('ไม่พบข้อมูลบัญชี', 'กรุณาตั้งค่าบัญชีในเมนูบัญชีก่อน', 'warning');
-            if(isNaN(amount) || amount < 20) return Swal.fire('ยอดเงินไม่ถูกต้อง', 'ถอนขั้นต่ำ 20 บาท', 'error');
-            if(amount > myUser.balance) return Swal.fire('ยอดเงินไม่พอ', 'ยอดเงินของคุณไม่เพียงพอสำหรับการถอน', 'error');
+            if(sys.exists && sys.data().withdraw_status === 'closed') return Swal.fire('ปิดปรับปรุง', 'ขออภัย ระบบถอนเงินปิดชั่วคราวเพื่ออัปเดต', 'info');
+            if(!myUser.bank) return Swal.fire('ยังไม่มีบัญชี', 'กรุณาตั้งค่าบัญชีในหน้า "บัญชี" ก่อนทำรายการ', 'warning');
+            if(isNaN(amount) || amount < 20) return Swal.fire('ยอดไม่ถูกต้อง', 'ถอนขั้นต่ำ 20 บาท', 'error');
+            if(amount > myUser.balance) return Swal.fire('ยอดเงินไม่พอ', 'ยอดเงินคงเหลือของคุณไม่พอถอน', 'error');
 
             const res = await Swal.fire({
-                title: 'ยืนยันการถอนเงิน?',
-                text: `จำนวน ${amount} บาท`,
+                title: 'ยืนยันการถอน?',
+                html: `ต้องการถอนเงินจำนวน <b style="color:#ef4444;">${amount}</b> บาท<br>เข้าบัญชี <b style="color:var(--primary-dark);">${myUser.bankAcc}</b>`,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'ยืนยัน',
+                confirmButtonText: 'ถอนเลย',
+                cancelButtonText: 'ยกเลิก',
                 confirmButtonColor: '#10b981'
             });
 
             if(res.isConfirmed) {
+                Swal.fire({title: 'กำลังดำเนินการ...', didOpen: () => Swal.showLoading()});
                 const batch = db.batch();
                 const txRef = db.collection('transactions').doc();
                 batch.update(db.collection('users').doc(myUser.id), { balance: myUser.balance - amount });
@@ -430,7 +448,7 @@
                 });
                 await batch.commit();
                 document.getElementById('wd-amount').value = '';
-                Swal.fire('ส่งคำขอแล้ว', 'รอแอดมินอนุมัติภายใน 5-15 นาที', 'success').then(() => navigate('history'));
+                Swal.fire('สำเร็จ', 'ส่งคำขอถอนเงินแล้ว โปรดรอการโอนเงิน', 'success').then(() => navigate('history'));
             }
         }
 
@@ -439,7 +457,7 @@
             const snap = await db.collection('transactions').where('uid', '==', myUser.id).get();
             
             if(snap.empty) {
-                list.innerHTML = '<p style="text-align:center; padding:40px; color:#94a3b8;">ไม่มีประวัติการทำรายการ</p>';
+                list.innerHTML = '<div style="text-align:center; padding:40px;"><i class="fas fa-folder-open" style="font-size:3rem; color:#e2e8f0; margin-bottom:10px;"></i><p style="color:#94a3b8;">ยังไม่มีประวัติการทำรายการ</p></div>';
                 return;
             }
 
@@ -448,14 +466,17 @@
             txs.sort((a, b) => b.timestamp - a.timestamp);
 
             list.innerHTML = txs.map(tx => `
-                <div class="section-box" style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <div class="section-box" style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-left:5px solid ${tx.status === 'success' ? '#22c55e' : tx.status === 'pending' ? '#f59e0b' : '#ef4444'};">
                     <div>
-                        <p style="font-weight:600;">ถอนเงิน</p>
-                        <p style="font-size:0.75rem; color:#94a3b8;">${tx.dateStr}</p>
+                        <p style="font-weight:600;"><i class="fas fa-money-bill-transfer"></i> ถอนเงิน</p>
+                        <p style="font-size:0.75rem; color:#94a3b8;"><i class="far fa-clock"></i> ${tx.dateStr}</p>
                     </div>
                     <div style="text-align:right;">
                         <p style="font-weight:700; color:#1e293b;">-${tx.amount.toLocaleString()} ฿</p>
-                        <span class="badge b-${tx.status}">${tx.status === 'pending' ? 'รอดำเนินการ' : (tx.status === 'success' ? 'สำเร็จ' : 'ยกเลิก/คืนเงิน')}</span>
+                        <span class="badge b-${tx.status}">
+                            <i class="fas ${tx.status === 'pending' ? 'fa-hourglass-half' : tx.status === 'success' ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                            ${tx.status === 'pending' ? 'รอโอน' : (tx.status === 'success' ? 'โอนแล้ว' : 'ยกเลิก')}
+                        </span>
                     </div>
                 </div>
             `).join('');
